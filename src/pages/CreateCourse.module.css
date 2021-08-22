@@ -1,0 +1,42 @@
+.enroll {
+  margin-top: 6rem;
+  max-width: 30rem;
+  margin-inline: auto;
+}
+
+.center {
+  text-align: center;
+  margin: auto;
+  display: block;
+}
+
+.enroll-header__title {
+  color: var(--color-main-dark);
+}
+.enroll-header__text {
+  margin-top: 1.2rem;
+}
+
+.cid-copy {
+  position: relative;
+}
+.cid-copy input {
+  cursor: text;
+}
+.cid-copy__button {
+  cursor: pointer;
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  right: 0.8rem;
+  background-color: transparent;
+  border: none;
+  transition: 0.1s all;
+}
+.cid-copy__button:active {
+  transform: translateY(-42%);
+}
+
+.cid-copy__button > * {
+  font-size: 1.2rem;
+}

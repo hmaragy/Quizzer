@@ -1,0 +1,26 @@
+.form-group {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+  margin: 3rem 0;
+
+  position: relative;
+}
+
+.form-group label {
+  position: absolute;
+  left: 1rem;
+  pointer-events: none;
+
+  transition: transform 0.2s;
+}
+
+.form-group input {
+  padding: 0.8rem 1rem;
+  width: 100%;
+}
+
+.form-group input:focus ~ label,
+.form-group input:not([value=""]) ~ label {
+  transform: translateY(-2.2rem);
+}

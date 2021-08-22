@@ -1,0 +1,89 @@
+.screen {
+  background-color: rgba(248, 229, 238, 0.527);
+  max-width: 25rem;
+}
+
+.screen__toolbar {
+  background-color: #e5b769;
+  padding: 0.5rem;
+  display: grid;
+  grid-template-columns: 2fr 8fr 1fr;
+  justify-content: center;
+  align-content: center;
+  text-align: center;
+  align-items: center;
+}
+.screen__actions {
+  display: flex;
+  gap: 0.5rem;
+}
+.screen__action-button {
+  background-color: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: 1.2rem;
+  display: inline-flex;
+  justify-content: center;
+  transition: 0.3s all;
+}
+
+.screen__action-button:hover {
+  transform: translateY(-1px);
+}
+.screen__action-button:active {
+  transform: translateY(1px);
+}
+
+.screen__controls {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  justify-items: center;
+  align-items: center;
+}
+
+.screen__controls > * {
+  width: 0.8rem;
+  height: 0.8rem;
+  border-radius: 50%;
+}
+
+.screen__controls--red {
+  background-color: rgb(248, 80, 80);
+}
+
+.screen__controls--yellow {
+  background-color: rgb(252, 252, 101);
+}
+
+.screen__controls--green {
+  background-color: rgb(14, 202, 14);
+}
+
+.screen__title {
+  color: var(--color-main-dark);
+}
+
+.screen__content::-webkit-scrollbar-track {
+  box-shadow: inset 0 0 4px rgba(0, 0, 0, 0.3);
+  background-color: #f5f5f5;
+}
+
+.screen__content::-webkit-scrollbar {
+  width: 8px;
+  background-color: #f5f5f5;
+}
+
+.screen__content::-webkit-scrollbar-thumb {
+  border-radius: 10px;
+  box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3);
+  background-color: var(--color-primary);
+}
+
+.screen__content {
+  height: 20rem;
+  overflow-y: auto;
+  display: grid;
+  grid-template-columns: 1fr;
+  align-content: start;
+  align-items: center;
+}

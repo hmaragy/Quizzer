@@ -1,0 +1,15 @@
+.error {
+  display: none;
+  background-color: var(--color-secondary);
+}
+
+.show-error {
+  display: block;
+  padding: 0.8rem 2rem;
+}
+
+.show-notif {
+  display: block;
+  padding: 0.8rem 2rem;
+  background-color: lightgreen;
+}

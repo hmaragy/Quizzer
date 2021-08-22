@@ -1,0 +1,17 @@
+.dashboard {
+  margin: 2rem 3rem;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, 25rem);
+  justify-content: space-evenly;
+  gap: 2rem;
+}
+
+.notif {
+  padding: 2rem;
+}
+
+@media screen and (max-width: 30rem) {
+  .dashboard {
+    margin: 2rem 0;
+  }
+}

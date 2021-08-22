@@ -1,24 +1,43 @@
-import logo from './logo.svg';
-import './App.css';
+import { Redirect, Route, Switch } from "react-router-dom";
+import Nav from "./components/layout/Nav";
+import Dashboard from "./pages/Dashboard";
+import Login from "./pages/Login";
+import Signup from "./pages/Signup";
+import Logout from "./pages/Logout";
+import Enroll from "./pages/Enroll";
+
+import { useAuth } from "./store/AuthContext";
+import CreateCourse from "./pages/CreateCourse";
+import CreateQuiz from "./pages/CreateQuiz";
+import Test from "./pages/Test";
 
 function App() {
+  const { user } = useAuth();
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <>
+      <Nav />
+      <Switch>
+        <Route path="/dashboard">{user.isLoggedIn ? <Dashboard /> : <Redirect to="/login" />}</Route>
+        <Route path="/courses/enroll">{user.isLoggedIn ? <Enroll /> : <Redirect to="/login" />}</Route>
+        <Route path="/courses/create">{user.isLoggedIn ? <CreateCourse /> : <Redirect to="/login" />}</Route>
+        <Route path="/login">
+          <Login />
+        </Route>
+        <Route path="/register">
+          <Signup />
+        </Route>
+        <Route path="/logout">
+          <Logout />
+        </Route>
+        <Route path="/test">
+          <Test />
+        </Route>
+        <Route path="/courses/:cid/create-quiz">
+          <CreateQuiz />
+        </Route>
+      </Switch>
+    </>
   );
 }
 

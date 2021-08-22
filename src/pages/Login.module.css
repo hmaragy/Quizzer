@@ -1,0 +1,13 @@
+.login {
+  max-width: 30rem;
+  margin: 4rem auto;
+  color: var(--color-main);
+}
+
+.login-header {
+  margin: 2rem 0;
+}
+
+.login-header__text {
+  font-size: 1.8rem;
+}
