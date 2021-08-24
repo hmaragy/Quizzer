@@ -94,7 +94,7 @@ export function CoursesProvider({ children }) {
         });
       }
 
-      //Check if course is found and add it to pending enrollments on teacher's course aka notifications.
+      //Check if course is found and add it to the user's courses...
       const querySnapshot = await db.collection("courses").where("cid", "==", courseId).get();
       const resultCourse = querySnapshot.docs[0]?.data();
       if (resultCourse && resultCourse.teacher) {
@@ -137,12 +137,87 @@ export function CoursesProvider({ children }) {
     }
   }
 
+  async function createQuiz(cid, quiz) {
+    try {
+      const courseRef = await db.collection("courses").doc(cid);
+      await courseRef.update("quizzes", f.firestore.FieldValue.arrayUnion({ ...quiz }));
+    } catch (error) {
+      console.log(error);
+      throw new Error("Something went wrong, please try again later...");
+    }
+  }
+
+  async function getQuizzes(cid) {
+    try {
+      const course = await getCourse(cid);
+      if (!userInfo.isTeacher) {
+        const [userInfo, userDoc] = await getUserInfo(user.user.uid, true);
+
+        const userCourseIndex = userInfo.courses.findIndex(course => {
+          if (course.cid === cid) {
+            return true;
+          }
+          return false;
+        });
+
+        const userCourse = userInfo.courses[userCourseIndex];
+
+        if (!course.quizzes) return [];
+        let updated = false;
+        course.quizzes.forEach(quiz => {
+          const uid = quiz.uid;
+          let checkFlag = false;
+
+          if (!userCourse?.quizzes) userCourse.quizzes = [];
+          userCourse.quizzes.forEach((userQuiz, index) => {
+            if (userQuiz.uid === uid) {
+              checkFlag = true;
+            }
+
+            if (new Date(+userQuiz.deadlineDate) < new Date() && !userQuiz.complete) {
+              userInfo.courses[userCourseIndex].quizzes[index].complete = true;
+              userInfo.courses[userCourseIndex].quizzes[index].taken = false;
+              userInfo.courses[userCourseIndex].quizzes[index].grade = 0;
+              updated = true;
+            }
+          });
+
+          if (!checkFlag) {
+            const q = { ...quiz };
+            if (new Date(q.deadlineDate) < new Date()) {
+              q.complete = true;
+              q.taken = false;
+              q.grade = 0;
+            }
+            userInfo.courses[userCourseIndex].quizzes.push(q);
+            updated = true;
+          }
+        });
+
+        if (updated) {
+          const userRef = await db.collection("users").doc(userDoc);
+          //very dirty :v
+          await userRef.update({ courses: userInfo.courses });
+        }
+
+        return userInfo.courses[userCourseIndex].quizzes;
+      } else {
+        return course.quizzes || [];
+      }
+    } catch (error) {
+      console.log(error);
+      throw new Error("Something went Wrong, Please reload the page and try again.");
+    }
+  }
+
   const value = {
     // changeEnrollmentStatus,
     createCourse,
     enrollToCourse,
     getCourses,
     getCourse,
+    createQuiz,
+    getQuizzes,
     userInfo,
   };
   return <CoursesContext.Provider value={value}>{children}</CoursesContext.Provider>;

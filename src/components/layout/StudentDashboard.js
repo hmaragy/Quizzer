@@ -5,7 +5,7 @@ const StudentDashboard = props => {
     <>
       {props.courses &&
         props.courses.map(course => {
-          return <Course name={course.name} quizzes={[]} key={course.cid} code={course.code} />;
+          return <Course name={course.name} cid={course.cid} key={course.cid} code={course.code} />;
         })}
     </>
   );

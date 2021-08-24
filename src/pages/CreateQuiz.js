@@ -1,7 +1,10 @@
 import classes from "./CreateQuiz.module.css";
 
 import { useEffect, useRef, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useHistory, useParams } from "react-router-dom";
+
+import DateTimePicker from "react-datetime-picker";
+
 import { useAuth } from "../store/AuthContext";
 import { useCourses } from "../store/CoursesContext";
 
@@ -13,12 +16,18 @@ import Editor from "../components/Editor";
 
 const Answer = props => {
   function emitChildren() {
-    return props.onClick(props.children, props.i);
+    return props.onClick(props.children, props.index);
+  }
+
+  function onChangeValue(e) {
+    if (e.target.checked) {
+      return props.onCorrectCheck(props.index);
+    }
   }
 
   return (
     <div className={classes["quiz-question__answer"]}>
-      <input type="radio" name="answer" />
+      <input onChange={onChangeValue} type="radio" name="answer" />
       <label
         htmlFor="answer"
         value={props.value}
@@ -37,82 +46,43 @@ const Question = props => {
   return <h3 onClick={emitChildren} dangerouslySetInnerHTML={{ __html: props.children }}></h3>;
 };
 
-const CreateQuiz = props => {
+/* CONSTANTS */
+const QUESTION = "QUESTION";
+const ANSWER = "ANSWER";
+
+const CreateQuiz = () => {
   const params = useParams();
-  const [quiz, setQuiz] = useState([]);
+  const history = useHistory();
+
+  const [fromDate, onFromDateChange] = useState(new Date());
+  const [deadlineDate, onDeadlineDateChange] = useState(new Date());
+
+  const [quiz, setQuiz] = useState({});
   const [quizPtr, setQuizPtr] = useState(0);
 
-  const [isDisabled, setIsDisabled] = useState([{ next: true, previous: false }]);
+  /* Disabled state for all buttons */
+  const [isDisabled, setIsDisabled] = useState({ next: true, previous: true, add: true, publish: true });
+  const [isLoading, setIsLoading] = useState(false);
 
   const [course, setCourse] = useState([]);
   const [error, setError] = useState("");
+  const [notif, setNotif] = useState("");
 
+  const [startBuilding, setStartBuilding] = useState(false);
   const [showQuestion, setShowQuestion] = useState(false);
   const [showAnswers, setShowAnswers] = useState(false);
   const [showTools, setShowTools] = useState(false);
 
-  const [question, setQuestion] = useState("");
-  const [answers, setAnswers] = useState([]);
+  /* Currently Editing question or answer. */
+  const [currentlyEditing, setCurrentlyEditing] = useState({ type: QUESTION });
 
-  const [currentlyEditing, setCurrentlyEditing] = useState({ type: "question" });
-
+  /* TinyMCE Ref */
   const contentRef = useRef();
 
   const { user } = useAuth();
-  const { getCourse } = useCourses();
+  const { getCourse, createQuiz } = useCourses();
 
-  function addQuestionToQuiz() {
-    if (!question || !answers.length > 1) {
-      return;
-    }
-    setQuizPtr(quiz.length + 1);
-    setQuiz(oldQuiz => {
-      return [
-        ...oldQuiz,
-        {
-          question: question,
-          answers: answers,
-          time: 180,
-        },
-      ];
-    });
-
-    setQuestion("");
-    setAnswers([]);
-    setCurrentlyEditing({ type: "question" });
-    setShowAnswers(false);
-    contentRef.current.editor.setContent("");
-  }
-
-  function addQuestion() {
-    setShowQuestion(true);
-  }
-
-  function addAnswer() {
-    setShowAnswers(true);
-    if (answers.length > 0) {
-      if (!answers[answers.length - 1].value) {
-        return;
-      }
-    }
-    setAnswers(oldAnswers => {
-      return [
-        ...oldAnswers,
-        {
-          value: null,
-          correct: false,
-        },
-      ];
-    });
-    setCurrentlyEditing({ type: "answer", i: answers.length });
-
-    if (answers.length >= 1) {
-      setShowTools(true);
-    }
-
-    contentRef.current.editor.setContent("");
-  }
-
+  /* Get course in question. */
   useEffect(() => {
     (async () => {
       try {
@@ -133,121 +103,370 @@ const CreateQuiz = props => {
     })();
   }, [getCourse, params.cid, user]);
 
-  function handleContent(content) {
-    if (currentlyEditing.type === "question") {
-      setQuestion(content);
-    } else {
-      setAnswers(oldAnswers => {
-        return oldAnswers.map((a, i) => {
-          if (i === currentlyEditing.i) {
-            return { value: content, correct: false };
-          }
-          return a;
+  useEffect(() => {
+    if (quiz.problems) {
+      if (quiz?.problems[quizPtr]?.answers.length <= 1) {
+        setIsDisabled(old => {
+          return { ...old, next: true, previous: true, add: true };
         });
-      });
+      } else if (quiz?.problems[quizPtr]?.answers.length > 1) {
+        setShowTools(true);
+        setIsDisabled(old => {
+          return { ...old, add: false };
+        });
+      }
+
+      if (quizPtr < quiz?.problems.length - 1) {
+        setIsDisabled(old => {
+          return { ...old, next: false };
+        });
+      }
+
+      if (quizPtr > 0) {
+        setIsDisabled(old => {
+          return { ...old, previous: false };
+        });
+      }
+
+      if (quizPtr === 0 && quizPtr < quiz.problems.length - 1) {
+        setIsDisabled(old => {
+          return { ...old, previous: true, next: false };
+        });
+      }
+
+      if (quizPtr === quiz.problems.length - 1) {
+        setIsDisabled(old => {
+          return { ...old, next: true };
+        });
+      }
+
+      if (quiz.problems.length > 0 && quiz.problems[0].question && quiz.problems[0].answers.length > 1) {
+        setIsDisabled(old => {
+          return { ...old, publish: false };
+        });
+      }
+
+      if (quizPtr === 0 && quizPtr === quiz.problems.length - 1) {
+        setIsDisabled(old => {
+          return { ...old, previous: true, next: true };
+        });
+      }
     }
+  }, [quiz, quizPtr]);
+
+  /* Helper functions for state...*/
+  function updateQuiz(pointer, value, currentlyEditing) {
+    setQuiz(oldQuiz => {
+      let q = [...oldQuiz.problems];
+      q = q.map((problem, i) => {
+        if (i === pointer) {
+          if (currentlyEditing.type === QUESTION) {
+            return { ...problem, question: value };
+          } else if (currentlyEditing.type === ANSWER) {
+            return {
+              ...problem,
+              answers: problem.answers.map((answer, i) => {
+                if (i === currentlyEditing.index) {
+                  return {
+                    ...answer,
+                    value: value,
+                  };
+                }
+                return answer;
+              }),
+            };
+          }
+        }
+        return problem;
+      });
+      return { ...oldQuiz, problems: q };
+    });
+  }
+
+  function clearEditor() {
+    contentRef.current.editor.setContent("");
+  }
+
+  function updateEditor(content) {
+    contentRef.current.editor.setContent(content);
+  }
+
+  /* Handle content while typing... */
+  function handleContent(content) {
+    if (currentlyEditing.type === QUESTION) {
+      updateQuiz(quizPtr, content, currentlyEditing);
+    } else {
+      updateQuiz(quizPtr, content, currentlyEditing);
+    }
+  }
+
+  function setQuizTime() {
+    if (!fromDate || !deadlineDate) {
+      return setError("You have to set correct dates");
+    }
+
+    const from = new Date(fromDate).getTime().toString();
+    const to = new Date(deadlineDate).getTime().toString();
+
+    if (to <= from) {
+      return setError("The deadline should come after the start date...");
+    }
+
+    setQuiz(oldQuiz => {
+      return { ...oldQuiz, fromDate: from, deadlineDate: to };
+    });
+
+    setStartBuilding(true);
+  }
+
+  /* Start adding 1st question */
+  function addQuestion() {
+    clearEditor();
+    setShowQuestion(true);
+
+    setQuizPtr(0);
+
+    setQuiz(oldQuiz => {
+      return {
+        ...oldQuiz,
+        problems: [
+          {
+            question: "",
+            answers: [],
+          },
+        ],
+      };
+    });
+
+    setCurrentlyEditing({ type: QUESTION });
+  }
+
+  /* Everytime add answer is clicked. */
+  function addAnswer() {
+    // First time
+    if (!showAnswers) {
+      setShowAnswers(true);
+    }
+
+    clearEditor();
+
+    //todo: Understand this weird phenomenon. State updates twice in deeply nested elements. Weird
+    const problems = quiz.problems.map((q, i) => {
+      if (i === quizPtr) {
+        q.answers.push({
+          value: "",
+          correct: false,
+        });
+      }
+      return q;
+    });
+    setQuiz(oldQuiz => {
+      return { ...oldQuiz, problems: problems };
+    });
+
+    setCurrentlyEditing({ type: ANSWER, index: quiz.problems[quizPtr].answers.length - 1 });
+  }
+
+  function onCorrectCheck(i) {
+    const problems = quiz.problems.map((q, index) => {
+      if (index === quizPtr) {
+        q.answers[i].correct = true;
+      }
+      return q;
+    });
+
+    setQuiz(oldQuiz => {
+      return { ...oldQuiz, problems: problems };
+    });
+  }
+
+  function addNewQuestion() {
+    clearEditor();
+    setShowQuestion(true);
+
+    setQuizPtr(quiz.problems.length);
+
+    setQuiz(oldQuiz => {
+      return {
+        ...oldQuiz,
+        problems: [
+          ...oldQuiz.problems,
+          {
+            question: "",
+            answers: [],
+          },
+        ],
+      };
+    });
+
+    setCurrentlyEditing({ type: QUESTION });
   }
 
   function editQuestion(question) {
-    contentRef.current.editor.setContent(question);
-    setCurrentlyEditing({ type: "question" });
+    setCurrentlyEditing({ type: QUESTION });
+    updateEditor(question);
   }
 
-  function editAnswer(value, index) {
-    setCurrentlyEditing({ type: "answer", i: index });
-    contentRef.current.editor.setContent(value);
+  function editAnswer(answer, index) {
+    setCurrentlyEditing({ type: ANSWER, index });
+    updateEditor(answer);
   }
 
-  useEffect(() => {
-    console.log("QUIZPTR", quizPtr);
-    if (quiz.length < 1) {
-      setIsDisabled(oldState => {
-        return { ...oldState, previous: true, next: true };
+  function cancelQuizCreation() {
+    history.push("/dashboard");
+  }
+
+  async function publishQuiz() {
+    try {
+      //First clean the quiz array.
+      setIsLoading(true);
+      const q = quiz.problems.filter(q => {
+        if (q.question && q.answers.length >= 1) {
+          let correct = false;
+          for (let answer of q.answers) {
+            if (!answer.value) throw new Error("Please make all sure your answers have a value.");
+            if (answer.correct) {
+              correct = true;
+            }
+          }
+          if (!correct) throw new Error("Please make sure you selected the correct answer in your questions.");
+          return true;
+        }
+        return false;
       });
-    } else if (quizPtr === 0) {
-      setIsDisabled(oldState => {
-        return { ...oldState, previous: true, next: false };
+
+      if (q.length < 1) {
+        setIsLoading(false);
+        throw new Error("Please make you have at least one question with minimum two answers");
+      }
+
+      const quizUID = new Date().getTime() + Math.floor(Math.random() * 2 ** 10).toString();
+      await createQuiz(params.cid, { ...quiz, uid: quizUID, problems: q });
+      setNotif("Quiz Created Successfully...");
+      setError("");
+      setIsLoading(false);
+      setIsDisabled(old => {
+        return { ...old, publish: true };
       });
-    } else if (quizPtr === quiz.length) {
-      setIsDisabled(oldState => {
-        return { ...oldState, next: true, previous: false };
-      });
-    } else {
-      setIsDisabled(oldState => {
-        return { ...oldState, next: false, previous: false };
-      });
+    } catch (error) {
+      setIsLoading(false);
+      setError(error.message);
     }
-  }, [quiz.length, quizPtr]);
+  }
+
+  function discardQuestion() {
+    setQuiz(oldQuiz => {
+      if (oldQuiz.problems.length === 1) return oldQuiz;
+      return {
+        ...oldQuiz,
+        problems: oldQuiz.problems.filter((q, index) => {
+          if (index === quizPtr) {
+            return false;
+          }
+          return true;
+        }),
+      };
+    });
+
+    setQuizPtr(old => {
+      if (old === 0) return old;
+      return old - 1;
+    });
+  }
 
   function previousQuestion() {
-    setQuizPtr(oldPTR => {
-      return oldPTR - 1;
-    });
+    setQuizPtr(old => old - 1);
   }
 
   function nextQuestion() {
-    setQuizPtr(oldPTR => {
-      return oldPTR + 1;
-    });
+    setQuizPtr(old => old + 1);
   }
 
   return (
     <div className={classes["create-quiz"]}>
       <div className="container">
-        <NotifMsg error={error} />
+        <NotifMsg notif={notif} error={error} />
         <header className={classes["create-quiz__header"]}>
           <div>
             <h1 className={classes["create-quiz__header--main"]}>Create Quiz</h1>
             <p className={classes["create-quiz__header--sub"]}>{course.name}</p>
           </div>
           <div className={classes["quiz-actions"]}>
-            <Button>Cancel</Button>
-            <Button>Publish</Button>
+            <Button onClick={cancelQuizCreation}>Cancel</Button>
+            <Button isLoading={isLoading} disabled={isDisabled.publish} onClick={publishQuiz}>
+              Publish
+            </Button>
           </div>
         </header>
-        <Card className={classes["create-quiz__body"]}>
-          {!showQuestion && <Button onClick={addQuestion}>Add Question</Button>}
-          {showQuestion && (
-            <div className={classes["quiz-question"]}>
-              <header className={classes["quiz-question__header"]}>
-                <h2>Question #{quiz.length + 1}</h2>
+        {!startBuilding && (
+          <Card className={classes["create-quiz__body"]}>
+            <h2 className={classes["time-pickers__header"]}>Please Select the date of quiz</h2>
+            <div className={classes["time-pickers__pickers"]}>
+              <div className={classes["time-pickers__from-time"]}>
+                <label htmlFor="from-time">Start Time: </label>
+                <DateTimePicker id="from-time" onChange={onFromDateChange} value={fromDate} />
+              </div>
+              <div className={classes["time-pickers__deadline-time"]}>
+                <label htmlFor="deadline">Deadline: </label>
+                <DateTimePicker id="deadline" onChange={onDeadlineDateChange} value={deadlineDate} />
+              </div>
+              <div className={classes["time-pickers__actions"]}>
+                <Button onClick={setQuizTime}>Start Creating Quiz</Button>
+              </div>
+            </div>
+          </Card>
+        )}
+        {startBuilding && (
+          <Card className={classes["create-quiz__body"]}>
+            {!showQuestion && <Button onClick={addQuestion}>Add Question</Button>}
+            {showQuestion && (
+              <div className={classes["quiz-question"]}>
+                <header className={classes["quiz-question__header"]}>
+                  <h2>Question #{quizPtr + 1}</h2>
+                  <div className={classes["quiz-question__actions"]}>
+                    <Button onClick={discardQuestion}>Discard question</Button>
+                  </div>
+                </header>
+                <div className={classes["quiz-question__question"]}>
+                  <Question onClick={editQuestion}>{quiz.problems[quizPtr].question}</Question>
+                  <div className={classes["quiz-question__answers"]}>
+                    {showAnswers &&
+                      quiz.problems[quizPtr].answers.map((answer, index) => {
+                        return (
+                          <Answer onCorrectCheck={onCorrectCheck} onClick={editAnswer} key={index} index={index}>
+                            {answer.value}
+                          </Answer>
+                        );
+                      })}
+                    {quiz.problems[quizPtr].question && <Button onClick={addAnswer}>Add Answer</Button>}
+                  </div>
+                </div>
+              </div>
+            )}
+            {showTools && (
+              <div className={classes["quiz-question__actions"]}>
                 <div className={classes["quiz-question__actions"]}>
-                  <Button>Discard question</Button>
+                  <Button disabled={isDisabled.previous} onClick={previousQuestion}>
+                    Back
+                  </Button>
+                  <Button disabled={isDisabled.next} onClick={nextQuestion}>
+                    Next
+                  </Button>
                 </div>
-              </header>
-              <div className={classes["quiz-question__question"]}>
-                <Question onClick={editQuestion}>{question}</Question>
-                <div className={classes["quiz-question__answers"]}>
-                  {showAnswers &&
-                    answers.map((answer, index) => {
-                      return (
-                        <Answer onClick={editAnswer} key={index} i={index}>
-                          {answer.value}
-                        </Answer>
-                      );
-                    })}
-                  {question && <Button onClick={addAnswer}>Add Answer</Button>}
+                <div className={classes["quiz-question__actions"]}>
+                  <Button disabled={isDisabled.add} onClick={addNewQuestion}>
+                    Add
+                  </Button>
                 </div>
               </div>
-              <Editor innerRef={contentRef} onContent={handleContent} />
-            </div>
-          )}
-          {showTools && (
-            <div className={classes["quiz-question__actions"]}>
-              <div className={classes["quiz-question__actions"]}>
-                <Button disabled={isDisabled.previous} onClick={previousQuestion}>
-                  Back
-                </Button>
-                <Button disabled={isDisabled.next} onClick={nextQuestion}>
-                  Next
-                </Button>
-              </div>
-              <div className={classes["quiz-question__actions"]}>
-                <Button onClick={addQuestionToQuiz}>Add</Button>
-              </div>
-            </div>
-          )}
-        </Card>
+            )}
+            <Editor
+              className={`${showQuestion ? "" : classes["show-editor"]} ${classes["editor"]}`}
+              innerRef={contentRef}
+              onContent={handleContent}
+            />
+          </Card>
+        )}
       </div>
     </div>
   );

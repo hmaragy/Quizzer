@@ -25,7 +25,7 @@ function Dashboard() {
         setError(error.message);
       }
     })();
-  }, [getCourses, user]);
+  }, [user]);
 
   const dashboard = userInfo?.isTeacher ? (
     <TeacherDashboard courses={courses} />

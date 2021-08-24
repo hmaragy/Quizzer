@@ -6,6 +6,12 @@
 .create-quiz * {
   font-weight: 400;
 }
+.show-editor {
+  display: none;
+}
+.editor {
+  margin-top: 1.5rem;
+}
 
 strong {
   font-weight: 600 !important;
@@ -45,7 +51,7 @@ strong {
 .quiz-question__answer {
   cursor: pointer;
   display: flex;
-  justify-content: start;
+  justify-content: flex-start;
   align-items: center;
   padding: 0.3rem;
   font-size: 1.2rem;
@@ -58,4 +64,25 @@ strong {
 .quiz-question__question {
   cursor: pointer;
   margin: 2rem;
+}
+
+.time-pickers__header {
+  margin-bottom: 2rem;
+}
+
+.time-pickers__pickers {
+  display: flex;
+  gap: 2rem;
+  flex-direction: column;
+}
+.time-pickers__from-time,
+.time-pickers__deadline-time {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  gap: 1.2rem;
+}
+.time-pickers__actions {
+  display: flex;
+  justify-content: flex-end;
 }

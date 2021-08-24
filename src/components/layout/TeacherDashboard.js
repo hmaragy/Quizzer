@@ -20,9 +20,10 @@ const TeacherDashboard = props => {
         props.courses.map(course => {
           return (
             <Course
+              teacher
               onCreateQuizClick={onCreateQuizClick}
               name={course.name}
-              quizzes={[]}
+              quizzes={course.quizzes}
               key={course.cid}
               cid={course.cid}
               code={course.code}

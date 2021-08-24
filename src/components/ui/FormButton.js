@@ -7,7 +7,7 @@ const Button = props => {
       onClick={props.onClick}
       disabled={props.disabled}
       type={props.type}
-      className={`${props.className} ${classes["form-submit"]} ${
+      className={`${props.className || ""} ${classes["form-submit"]} ${
         props.isLoading ? classes["form-submit--loading"] : ""
       }`}
     >
