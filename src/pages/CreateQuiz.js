@@ -27,7 +27,7 @@ const Answer = props => {
 
   return (
     <div className={classes["quiz-question__answer"]}>
-      <input onChange={onChangeValue} type="radio" name="answer" />
+      <input checked={props.correct} onChange={onChangeValue} type="radio" name="answer" />
       <label
         htmlFor="answer"
         value={props.value}
@@ -433,7 +433,13 @@ const CreateQuiz = () => {
                     {showAnswers &&
                       quiz.problems[quizPtr].answers.map((answer, index) => {
                         return (
-                          <Answer onCorrectCheck={onCorrectCheck} onClick={editAnswer} key={index} index={index}>
+                          <Answer
+                            correct={answer.correct}
+                            onCorrectCheck={onCorrectCheck}
+                            onClick={editAnswer}
+                            key={index}
+                            index={index}
+                          >
                             {answer.value}
                           </Answer>
                         );

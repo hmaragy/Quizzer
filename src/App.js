@@ -10,6 +10,7 @@ import { useAuth } from "./store/AuthContext";
 import CreateCourse from "./pages/CreateCourse";
 import CreateQuiz from "./pages/CreateQuiz";
 import Test from "./pages/Test";
+import SolveQuiz from "./pages/SolveQuiz";
 
 function App() {
   const { user } = useAuth();
@@ -35,6 +36,9 @@ function App() {
         </Route>
         <Route path="/courses/:cid/create-quiz">
           <CreateQuiz />
+        </Route>
+        <Route path="/courses/:cid/quizzes/:qid">
+          <SolveQuiz />
         </Route>
       </Switch>
     </>

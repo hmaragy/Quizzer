@@ -73,9 +73,14 @@ export function CoursesProvider({ children }) {
       let querySnapshot = await db.collection("courses").where("cid", "==", cid).get();
       if (!querySnapshot.empty) {
         return querySnapshot.docs[0].data();
+      } else {
+        const error = new Error("Course not found");
+        error.type = "NOT-FOUND";
+        throw error;
       }
     } catch (error) {
-      throw error;
+      if (error.type === "NOT-FOUND") throw error;
+      else throw new Error("Please reload the page and try again.");
     }
   }
 
@@ -210,6 +215,37 @@ export function CoursesProvider({ children }) {
     }
   }
 
+  async function submitQuiz(quiz, cid) {
+    try {
+      const [userInfo, userDoc] = await getUserInfo(user.user.uid, true);
+      const userRef = await db.collection("users").doc(userDoc);
+      userInfo.courses = userInfo.courses.map(course => {
+        if (course.cid === cid) {
+          let courseQuiz = course.quizzes.findIndex(q => {
+            if (q.uid === quiz.uid) {
+              return true;
+            }
+            return false;
+          });
+
+          if (courseQuiz < 0) throw new Error("Quiz not found, please reload the page and try again");
+
+          course.quizzes[courseQuiz] = quiz;
+
+          return course;
+        }
+
+        return course;
+      });
+
+      await userRef.update({
+        courses: userInfo.courses,
+      });
+    } catch (error) {
+      throw error;
+    }
+  }
+
   const value = {
     // changeEnrollmentStatus,
     createCourse,
@@ -218,6 +254,7 @@ export function CoursesProvider({ children }) {
     getCourse,
     createQuiz,
     getQuizzes,
+    submitQuiz,
     userInfo,
   };
   return <CoursesContext.Provider value={value}>{children}</CoursesContext.Provider>;

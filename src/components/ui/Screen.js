@@ -12,7 +12,7 @@ const Screen = props => {
         <div className={classes["screen__title"]}>
           <h2>{props.title}</h2>
         </div>
-        {props.actions && (
+        {props.actioned && props.actions && (
           <div className={classes["screen__actions"]}>
             {props.actions.map((action, index) => {
               return (

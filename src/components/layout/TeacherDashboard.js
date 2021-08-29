@@ -20,6 +20,7 @@ const TeacherDashboard = props => {
         props.courses.map(course => {
           return (
             <Course
+              actioned
               teacher
               onCreateQuizClick={onCreateQuizClick}
               name={course.name}

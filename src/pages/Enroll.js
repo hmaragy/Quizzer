@@ -14,22 +14,22 @@ function Enroll() {
   const [notif, setNotif] = useState("");
   const [isLoading, setIsLoading] = useState("");
   const [courseId, setCourseId] = useState("");
-  const { enrollToCourse } = useCourses();
-
-  useEffect(() => {
-    (async () => {})();
-  }, []);
+  const { enrollToCourse, userInfo } = useCourses();
 
   function handleInput(e) {
     setCourseId(e.target.value);
   }
 
   async function handleEnroll(e) {
+    e.preventDefault();
     try {
-      e.preventDefault();
-      setIsLoading(true);
-      await enrollToCourse(courseId);
-      setNotif("You have successfully enrolled to course, please wait until your teacher accepts you.");
+      if (!userInfo.isTeacher) {
+        setIsLoading(true);
+        await enrollToCourse(courseId);
+        setNotif("You have successfully enrolled to course, please wait until your teacher accepts you.");
+      } else {
+        setError("You are a teacher, please create a student account to enroll.");
+      }
     } catch (error) {
       setError(error.message);
     }

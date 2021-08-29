@@ -59,7 +59,7 @@ function Course(props) {
   }
   return (
     <Card className={classes["course"]}>
-      <Screen actions={COURSE_ACTIONS} title={props.name}>
+      <Screen actioned={props.actioned} actions={COURSE_ACTIONS} title={props.name}>
         {isLoading && <Loading loading={isLoading} />}
         {!isLoading &&
           quizzes?.map((quiz, index) => {

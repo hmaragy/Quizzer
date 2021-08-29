@@ -1,0 +1,14 @@
+.solve-quiz {
+  margin: 2rem;
+  color: var(--color-main);
+}
+
+.solve-quiz__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.quiz {
+  margin: 2rem;
+}
