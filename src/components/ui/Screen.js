@@ -10,7 +10,9 @@ const Screen = props => {
           <div className={classes["screen__controls--green"]}></div>
         </div>
         <div className={classes["screen__title"]}>
-          <h2>{props.title}</h2>
+          <h2 className={classes["screen_course-name"]} title={props.title}>
+            {props.title}
+          </h2>
         </div>
         {props.actioned && props.actions && (
           <div className={classes["screen__actions"]}>

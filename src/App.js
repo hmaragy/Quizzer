@@ -19,6 +19,10 @@ function App() {
     <>
       <Nav />
       <Switch>
+        {/* there's no homepage currently so it goes to dashboard too... */}
+        <Route path="/" exact>
+          {user.isLoggedIn ? <Redirect to="/dashboard" /> : <Redirect to="/login" />}
+        </Route>
         <Route path="/dashboard">{user.isLoggedIn ? <Dashboard /> : <Redirect to="/login" />}</Route>
         <Route path="/courses/enroll">{user.isLoggedIn ? <Enroll /> : <Redirect to="/login" />}</Route>
         <Route path="/courses/create">{user.isLoggedIn ? <CreateCourse /> : <Redirect to="/login" />}</Route>

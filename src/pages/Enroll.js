@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import classes from "./Enroll.module.css";
 
 import NotifMsg from "../components/NotifMsg";

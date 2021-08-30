@@ -1,7 +1,7 @@
 .dashboard {
-  margin: 2rem 3rem;
+  margin: 2rem;
   display: grid;
-  grid-template-columns: repeat(auto-fit, 25rem);
+  grid-template-columns: repeat(auto-fit, minmax(10rem, 25rem));
   justify-content: space-evenly;
   gap: 2rem;
 }
@@ -12,6 +12,6 @@
 
 @media screen and (max-width: 30rem) {
   .dashboard {
-    margin: 2rem 0;
+    margin: 2rem 1rem;
   }
 }

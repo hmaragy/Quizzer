@@ -1,5 +1,6 @@
-.enroll {
-  margin-top: 6rem;
+.create-course {
+  margin-top: 4rem;
+  margin-bottom: 4rem;
   max-width: 30rem;
   margin-inline: auto;
 }
@@ -10,10 +11,10 @@
   display: block;
 }
 
-.enroll-header__title {
+.create-course__title {
   color: var(--color-main-dark);
 }
-.enroll-header__text {
+.create-course__text {
   margin-top: 1.2rem;
 }
 

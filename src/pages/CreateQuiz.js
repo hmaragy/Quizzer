@@ -410,9 +410,9 @@ const CreateQuiz = () => {
                 <label htmlFor="deadline">Deadline: </label>
                 <DateTimePicker id="deadline" onChange={onDeadlineDateChange} value={deadlineDate} />
               </div>
-              <div className={classes["time-pickers__actions"]}>
-                <Button onClick={setQuizTime}>Start Creating Quiz</Button>
-              </div>
+            </div>
+            <div className={classes["quiz-actions"]}>
+              <Button onClick={setQuizTime}>Start Creating Quiz</Button>
             </div>
           </Card>
         )}

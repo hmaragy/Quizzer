@@ -80,11 +80,11 @@ function CreateCourse() {
     <>
       {cid && (
         <div className="container">
-          <Card border flat className={classes["enroll"]}>
+          <Card border flat className={classes["create-course"]}>
             <NotifMsg error={error} notif={notif} />
-            <div className={classes["enroll-header"]}>
-              <h2 className={classes["enroll-header__title"]}>Course Created Successfully</h2>
-              <p className={classes["enroll-header__text"]}>Please copy the code below and give it to your students.</p>
+            <div className={classes["create-course__header"]}>
+              <h2 className={classes["create-course__title"]}>Course Created Successfully</h2>
+              <p className={classes["create-course__text"]}>Please copy the code below and give it to your students.</p>
             </div>
             <div className={classes["cid-copy"]}>
               <Input innerRef={cidRef} disabled autoComplete="off" type="text" id="code" name="code" value={cid} />
@@ -97,10 +97,10 @@ function CreateCourse() {
       )}
       {!cid && (
         <div className="container">
-          <Card border flat className={classes["enroll"]}>
-            <div className={classes["enroll-header"]}>
-              <h2 className={classes["enroll-header__title"]}>Create Course</h2>
-              <p className={classes["enroll-header__text"]}>Please Enter Course Information.</p>
+          <Card border flat className={classes["create-course"]}>
+            <div className={classes["create-course-header"]}>
+              <h2 className={classes["create-course__title"]}>Create Course</h2>
+              <p className={classes["create-course__text"]}>Please Enter Course Information.</p>
             </div>
 
             <NotifMsg error={error} notif={notif} />
@@ -125,7 +125,7 @@ function CreateCourse() {
                 label="Course Code, EG: CSE254"
               />
               <FormButton className={classes["center"]} disabled={isLoading} type="submit" isLoading={isLoading}>
-                Enroll to course
+                Create Course
               </FormButton>
             </form>
           </Card>

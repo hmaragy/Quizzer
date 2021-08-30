@@ -27,7 +27,7 @@ function Course(props) {
       setIsLoading(false);
       setQuizzes(q.reverse());
     })();
-  }, []);
+  }, [getQuizzes, props.cid]);
 
   const COURSE_ACTIONS = [
     {

@@ -87,3 +87,10 @@
   align-content: start;
   align-items: center;
 }
+
+.screen_course-name {
+  width: 9rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}

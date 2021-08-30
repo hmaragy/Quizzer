@@ -11,6 +11,14 @@
   display: inline-block;
   position: relative;
 }
+
+@media screen and (max-width: 30rem) {
+  .form-submit {
+    padding: 0.6rem 1.2rem;
+    font-size: 1rem;
+  }
+}
+
 .form-submit:hover {
   box-shadow: 1px 2px 8px 0px rgba(0, 0, 0, 0.2);
   transform: translateY(-0.1rem);
