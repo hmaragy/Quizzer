@@ -44,6 +44,13 @@ export function CoursesProvider({ children }) {
     }
   }
 
+  async function updateUserInfo() {
+    if (user?.user?.uid) {
+      let userInfo = await getUserInfo(user.user.uid);
+      setUserInfo(userInfo);
+    }
+  }
+
   async function getCourses() {
     try {
       const userInfo = await getUserInfo(user.user.uid);
@@ -204,7 +211,6 @@ export function CoursesProvider({ children }) {
           //very dirty :v
           await userRef.update({ courses: userInfo.courses });
         }
-
         return userInfo.courses[userCourseIndex].quizzes;
       } else {
         return course.quizzes || [];
@@ -242,6 +248,7 @@ export function CoursesProvider({ children }) {
         courses: userInfo.courses,
       });
     } catch (error) {
+      console.log(error);
       throw error;
     }
   }
@@ -255,6 +262,7 @@ export function CoursesProvider({ children }) {
     createQuiz,
     getQuizzes,
     submitQuiz,
+    updateUserInfo,
     userInfo,
   };
   return <CoursesContext.Provider value={value}>{children}</CoursesContext.Provider>;

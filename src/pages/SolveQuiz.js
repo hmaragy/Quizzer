@@ -44,13 +44,18 @@ const SolveQuiz = props => {
   const params = useParams();
   const history = useHistory();
 
-  const { userInfo, getCourse, submitQuiz } = useCourses();
+  const { userInfo, updateUserInfo, getCourse, submitQuiz } = useCourses();
   const { user } = useAuth();
+
+  useEffect(() => {
+    updateUserInfo();
+  }, []);
 
   useEffect(() => {
     (async () => {
       try {
         setError("");
+
         if (!userInfo) return;
 
         const course = await getCourse(params.cid);
@@ -69,6 +74,7 @@ const SolveQuiz = props => {
         //We have the usercourse now...
         setCourse(userCourse);
 
+        if (!userCourse?.quizzes) return;
         //Now getting the quiz
         const quiz = userCourse.quizzes.find(q => {
           if (q.uid === params.qid) {
@@ -92,7 +98,7 @@ const SolveQuiz = props => {
         console.log(error);
       }
     })();
-  }, [getCourse, params.cid, user, userInfo]);
+  }, [user, params.cid, userInfo, getCourse, params.qid]);
 
   useEffect(() => {
     (async () => {
@@ -102,7 +108,7 @@ const SolveQuiz = props => {
         history.push("/dashboard");
       }
     })();
-  }, [history, quiz, submitQuiz]);
+  }, [history, params.cid, quiz, submitQuiz]);
 
   function selectAnswer(idx) {
     setQuiz(oldQuiz => {
@@ -122,8 +128,12 @@ const SolveQuiz = props => {
   async function submitSolution() {
     setQuiz(oldQuiz => {
       quiz.problems[curQuestionPos].answers.forEach(answer => {
-        if (answer.userSelected && answer.correct) {
-          oldQuiz.problems[curQuestionPos].correct = true;
+        if (answer.userSelected) {
+          if (answer.correct) {
+            oldQuiz.problems[curQuestionPos].correct = true;
+          } else {
+            oldQuiz.problems[curQuestionPos].correct = false;
+          }
         }
       });
       return { ...oldQuiz };
@@ -137,11 +147,11 @@ const SolveQuiz = props => {
         let totalGrade = q.problems.length;
         q.complete = true;
         q.problems.forEach(problem => {
-          console.log(problem);
           if (problem.correct) {
             ++grade;
           }
         });
+        console.log(grade);
         q = { ...q, grade: ((grade / totalGrade) * 100).toFixed(2) };
 
         return q;
@@ -163,7 +173,7 @@ const SolveQuiz = props => {
         <Card className={classes["quiz"]}>
           {quiz && (
             <>
-              <header>
+              <header className={classes["quiz__header"]}>
                 <p>
                   Question {curQuestionPos + 1} of {quiz.problems.length}
                 </p>

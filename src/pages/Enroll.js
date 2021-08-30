@@ -8,6 +8,7 @@ import { useCourses } from "../store/CoursesContext";
 import Card from "../components/ui/Card";
 import Input from "../components/ui/Input";
 import FormButton from "../components/ui/FormButton";
+import { useHistory } from "react-router-dom";
 
 function Enroll() {
   const [error, setError] = useState("");
@@ -15,6 +16,7 @@ function Enroll() {
   const [isLoading, setIsLoading] = useState("");
   const [courseId, setCourseId] = useState("");
   const { enrollToCourse, userInfo } = useCourses();
+  const history = useHistory();
 
   function handleInput(e) {
     setCourseId(e.target.value);
@@ -26,7 +28,10 @@ function Enroll() {
       if (!userInfo.isTeacher) {
         setIsLoading(true);
         await enrollToCourse(courseId);
-        setNotif("You have successfully enrolled to course, please wait until your teacher accepts you.");
+        setNotif("You have successfully enrolled to course, we're redirecting you now to the dashboard ^^.");
+        setTimeout(function () {
+          history.push("/dashboard");
+        }, 2000);
       } else {
         setError("You are a teacher, please create a student account to enroll.");
       }

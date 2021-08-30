@@ -184,7 +184,7 @@ const CreateQuiz = () => {
   }
 
   function clearEditor() {
-    contentRef.current.editor.setContent("");
+    contentRef?.current?.editor?.setContent("");
   }
 
   function updateEditor(content) {
@@ -271,6 +271,8 @@ const CreateQuiz = () => {
     const problems = quiz.problems.map((q, index) => {
       if (index === quizPtr) {
         q.answers[i].correct = true;
+      } else {
+        q.answers[i].correct = false;
       }
       return q;
     });

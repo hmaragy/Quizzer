@@ -94,3 +94,12 @@
   overflow: hidden;
   text-overflow: ellipsis;
 }
+
+@media screen and (min-width: 24rem) {
+  .screen_course-name {
+    width: 15rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}

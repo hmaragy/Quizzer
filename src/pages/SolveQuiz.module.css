@@ -12,3 +12,26 @@
 .quiz {
   margin: 2rem;
 }
+
+.quiz__header {
+  margin: 2rem;
+}
+.quiz__header p {
+  margin-top: 2rem;
+}
+
+.quiz__solutions {
+  display: flex;
+  flex-direction: column;
+  margin: 2rem;
+}
+
+.quiz__solutions > * {
+  padding: 0.4rem;
+}
+.quiz__solutions * {
+  cursor: pointer;
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
