@@ -27,10 +27,9 @@ const Answer = props => {
 
   return (
     <div className={classes["quiz-question__answer"]}>
-      <input checked={props.correct} onChange={onChangeValue} type="radio" name="answer" />
+      <input checked={props.correct} onChange={onChangeValue} type="radio" name="answer" id={"answer" + props.index} />
       <label
-        htmlFor="answer"
-        value={props.value}
+        htmlFor={"answer" + props.index}
         onClick={emitChildren}
         dangerouslySetInnerHTML={{ __html: props.children }}
       ></label>
@@ -268,13 +267,14 @@ const CreateQuiz = () => {
   }
 
   function onCorrectCheck(i) {
-    const problems = quiz.problems.map((q, index) => {
-      if (index === quizPtr) {
-        q.answers[i].correct = true;
+    const problems = [...quiz.problems];
+    problems[quizPtr].answers = problems[quizPtr].answers.map((a, index) => {
+      if (index === i) {
+        a.correct = true;
       } else {
-        q.answers[i].correct = false;
+        a.correct = false;
       }
-      return q;
+      return a;
     });
 
     setQuiz(oldQuiz => {

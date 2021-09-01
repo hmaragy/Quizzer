@@ -6,7 +6,7 @@ import "firebase/auth";
 import "firebase/firestore";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyBkr_PDnEtVe_K1-fZhfLCf1lebJDPJMuA",
+  apiKey: "",
   authDomain: "localhost",
   databaseURL: "quizzer-2600.firebaseio.com",
   projectId: "quizzer-2600",
